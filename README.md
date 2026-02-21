@@ -22,26 +22,41 @@ Features
 ->Topic Analysis
 
 1.Each topic is automatically analyzed to determine:
+
 •Difficulty (Easy / Medium / Hard)
+
 •Priority score
+
 •Estimated study hours
+
 •Explanation of classification
 
 ->Smart Study Planner
 1.Generates a day-wise roadmap with:
+
 •Hard topics first
+
 •Balanced topic mix per day
+
 •End-of-day revision (normal mode)
+
 •Crash mode → maximum topics, no revision
+
 •Overflow detection (topics that don’t fit)
 
 ->Tech Stack
 •Python
+
 •Streamlit
+
 •Pandas
+
 •SQLite
+
 •pdfplumber
+
 •PyMuPDF
+
 •Plotly
 
 Link for app- (https://studyos-ai-planner-llbk2h8h9svzsznrvv8fsy.streamlit.app/)
