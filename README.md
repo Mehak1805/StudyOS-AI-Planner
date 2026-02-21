@@ -43,4 +43,5 @@ Features
 •pdfplumber
 •PyMuPDF
 •Plotly
+
 Link for app- (https://studyos-ai-planner-llbk2h8h9svzsznrvv8fsy.streamlit.app/)
