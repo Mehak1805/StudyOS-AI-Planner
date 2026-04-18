@@ -25,6 +25,14 @@ def init_db():
     )
     """)
     c.execute("""
+    CREATE TABLE IF NOT EXISTS saved_plans(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        plan_json TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+    c.execute("""
     CREATE TABLE IF NOT EXISTS knowledge(
         subject TEXT,
         keyword TEXT,
@@ -289,6 +297,24 @@ def save_to_knowledge(subject, topic, difficulty, score, exam_prob=55):
         c.execute("INSERT INTO knowledge VALUES(?,?,?,?,?)",
                   (subject.lower(), topic.lower(), difficulty, score, exam_prob))
         c.commit()
+    c.close()
+
+def save_study_plan(name, plan_json):
+    c = conn()
+    c.execute("INSERT INTO saved_plans (name, plan_json) VALUES(?,?)", (name, plan_json))
+    c.commit()
+    c.close()
+
+def get_saved_plans():
+    c = conn()
+    rows = c.execute("SELECT id, name, plan_json, created_at FROM saved_plans ORDER BY created_at DESC").fetchall()
+    c.close()
+    return rows
+
+def delete_saved_plan(plan_id):
+    c = conn()
+    c.execute("DELETE FROM saved_plans WHERE id=?", (plan_id,))
+    c.commit()
     c.close()
 
 def save_study_plan(name, plan_json):

@@ -261,6 +261,10 @@ with tab1:
         st.session_state.pop("last_uploaded_id", None)
         st.session_state.pop("pdf_result", None)
 
+    if uploaded is None:
+        st.session_state.pop("last_uploaded_id", None)
+        st.session_state.pop("pdf_result", None)
+
     if uploaded is not None:
         file_id = f"{uploaded.name}_{uploaded.size}"
         if st.session_state.get("last_uploaded_id") != file_id:

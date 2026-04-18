@@ -4,3 +4,4 @@ pypdf
 plotly
 pdfplumber
 pymupdf
+fpdf2
