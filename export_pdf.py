@@ -27,7 +27,7 @@ def create_pdf(plan_df, days, hours, crash_mode):
 
     if plan_df is None or plan_df.empty:
         pdf.cell(0, 10, "No topics planned.", 0, 1)
-        return pdf.output(dest='S').encode('latin1')
+        return bytes(pdf.output(dest='S'))
 
     # Group by Day
     sched = plan_df[~plan_df["Type"].isin(["Known", "Overflow"])]
@@ -78,4 +78,4 @@ def create_pdf(plan_df, days, hours, crash_mode):
             subj = r['Subject'].encode('latin-1', 'replace').decode('latin-1')
             pdf.cell(0, 8, f"- {topic} ({subj})", 0, 1)
 
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output(dest='S'))
