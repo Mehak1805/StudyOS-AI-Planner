@@ -3,11 +3,13 @@ import pandas as pd
 
 from database import (
     init_db, add_topic, get_topics, clear_topics,
-    mark_topic_known, mark_all_known, reset_knowledge
+    mark_topic_known, mark_all_known, reset_knowledge,
+    save_study_plan, get_saved_plans, delete_saved_plan
 )
 from analyzer import analyze_topics
 from planner import generate_schedule
 from pdf_parser import extract_topics_from_pdf
+from export_pdf import create_pdf
 
 st.set_page_config(
     page_title="StudyOS — AI Planner",
@@ -221,7 +223,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["📚  Topics", "🗺  Study Roadmap"])
+tab1, tab2, tab3 = st.tabs(["📚  Topics", "🗺  Study Roadmap", "💾  Saved Plans"])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — Topics
@@ -254,6 +256,10 @@ with tab1:
     # ── PDF Upload ────────────────────────────────────────────────────────────
     st.markdown('<div class="sec-label">Upload Syllabus PDF</div>', unsafe_allow_html=True)
     uploaded = st.file_uploader("", type=["pdf"], label_visibility="collapsed")
+
+    if uploaded is None:
+        st.session_state.pop("last_uploaded_id", None)
+        st.session_state.pop("pdf_result", None)
 
     if uploaded is not None:
         file_id = f"{uploaded.name}_{uploaded.size}"
@@ -588,3 +594,60 @@ with tab2:
                         </div>
                         {badge("Known")}
                     </div>""", unsafe_allow_html=True)
+            
+            st.markdown("---")
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                pdf_bytes = create_pdf(plan, plan_days, plan_hours, crash_mode)
+                st.download_button(
+                    label="📄 Download as PDF",
+                    data=pdf_bytes,
+                    file_name="Study_Plan.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            with cc2:
+                with st.form(key="save_plan_form"):
+                    sf1, sf2 = st.columns([3, 1])
+                    plan_name = sf1.text_input("Name:", value=f"Plan {plan_days} Days", label_visibility="collapsed")
+                    save_btn = sf2.form_submit_button("💾 Save")
+                if save_btn:
+                    try:
+                        save_study_plan(plan_name, plan.to_json(orient="records"))
+                        st.success("Plan saved successfully! Check 'Saved Plans' tab.")
+                    except Exception as e:
+                        st.error(f"Failed to save plan: {e}")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 3 — Saved Plans
+# ══════════════════════════════════════════════════════════════════════════════
+with tab3:
+    st.markdown('<div class="sec-label">Your Saved Plans</div>', unsafe_allow_html=True)
+    try:
+        saved_plans = get_saved_plans()
+    except Exception as e:
+        st.error("Database schema outdated! Please click here or restart to update.")
+        saved_plans = []
+
+    if not saved_plans:
+        st.markdown("""
+        <div style="text-align:center;padding:4rem;color:#1E2D45;font-size:0.9rem">
+            No saved plans yet. Generate and save one from the Roadmap tab!
+        </div>""", unsafe_allow_html=True)
+    else:
+        for p in saved_plans:
+            p_id, p_name, p_json, p_date = p
+            with st.expander(f"📁 **{p_name}**  —  {p_date[:16]}"):
+                st.markdown(f"*Created: {p_date}*")
+                d1, d2 = st.columns(2)
+                if d1.button("👁 Load Plan to Roadmap", key=f"load_{p_id}"):
+                    import pandas as pd
+                    try:
+                        loaded_plan = pd.read_json(p_json, orient="records")
+                        st.session_state.plan = loaded_plan
+                        st.success("Loaded successfully! Go to 'Study Roadmap' tab to view.")
+                    except Exception as e:
+                        st.error("Failed to load this plan.")
+                if d2.button("🗑 Delete", key=f"del_{p_id}"):
+                    delete_saved_plan(p_id)
+                    st.rerun()
