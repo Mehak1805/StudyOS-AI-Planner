@@ -231,6 +231,11 @@ tab1, tab2, tab3 = st.tabs(["📚  Topics", "🗺  Study Roadmap", "💾  Saved 
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
 
+    # CLEAR ON FIRST LOAD
+    if "session_started" not in st.session_state:
+        clear_topics()
+        st.session_state.session_started = True
+
     if st.session_state.get("pdf_upload_msg"):
         st.success(st.session_state.pop("pdf_upload_msg"))
 
@@ -285,6 +290,7 @@ with tab1:
             if topics_list:
                 st.info(f"📄 Found **{len(topics_list)} topics** from **{subject_name}**")
                 if st.button(f"✅ Add all {len(topics_list)} topics", use_container_width=True):
+                    clear_topics()
                     for t in topics_list:
                         add_topic(subject_name, t)
                     st.session_state.pop("analysis_df", None)
@@ -431,7 +437,7 @@ with tab2:
 
     rows = get_topics()
 
-    if not rows:
+    if not rows and "plan" not in st.session_state:
         st.markdown("""
         <div style="text-align:center;padding:4rem;color:#1E2D45;font-size:0.9rem">
             Add topics first → then come here 👆
