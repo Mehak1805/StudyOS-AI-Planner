@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io
 
 from database import (
     init_db, add_topic, get_topics, clear_topics,
@@ -647,7 +648,7 @@ with tab3:
                 if d1.button("👁 Load Plan to Roadmap", key=f"load_{p_id}"):
                     import pandas as pd
                     try:
-                        loaded_plan = pd.read_json(p_json, orient="records")
+                        loaded_plan = pd.read_json(io.StringIO(p_json), orient="records")
                         st.session_state.plan = loaded_plan
                         st.success("Loaded successfully! Go to 'Study Roadmap' tab to view.")
                     except Exception as e:
